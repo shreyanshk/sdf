@@ -58,7 +58,7 @@ func initFromVCS(url string) {
 	exec.Command(gitCmd2[0], gitCmd2[1:]...).Run()
 	// ensure other users can't see our data.
 	check(os.Chmod(sdfPath, 0700))
-	fmt.Println("Restored SDF configuration, activate it with 'sdf vcs checkout .'")
+	fmt.Println("Restored SDF configuration, activate it with 'sdf git checkout .'")
 }
 
 // sdf new <url>
@@ -110,6 +110,16 @@ func rmFromVCS(paths []string) {
 // Launch the given program under strace and then filters
 // output to display the files that are opened by it.
 func traceCmd(inCmd []string) {
+	// test if strace is present
+	if _, err := exec.LookPath("strace"); err != nil {
+		fmt.Println("Strace not found. Check your $PATH or install it.")
+		return
+	}
+	// test if given binary exist
+	if _, err := exec.LookPath(inCmd[0]); err != nil {
+		fmt.Println("Binary not executable or doesn't exist. Cannot continue.")
+		return
+	}
 	straceArgs := strings.Fields("-f -e trace=openat")
 	fullArgs := append(straceArgs, inCmd...)
 	straceCmd := exec.Command("strace")
