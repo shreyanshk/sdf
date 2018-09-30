@@ -8,11 +8,7 @@ buildGoPackage rec {
 
   goPackagePath = "github.com/shreyansh_k/sdf";
 
-  src = fetchgit {
-    inherit rev;
-    url = "git@github.com:shreyanshk/sdf.git";
-    sha256 = "0lkmpq686h2snv2akmdnwc4llq4695za4461h2ggf8b1kdckqrp3";
-  };
+  src = ./.;
 
   goDeps = ./deps.nix;
 
