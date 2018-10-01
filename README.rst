@@ -122,3 +122,9 @@ Because SDF is a wrapper around Git, you can pass all valid git commands (except
 See `Git's documentation`_ for more details.
 
 .. _Git's documentation: https://git-scm.com/doc
+
+Credits
+=======
+
+* Shreyansh Khajanchi <shreyansh_k@live.com>
+* SneakyCobra <https://news.ycombinator.com/item?id=11070797>
