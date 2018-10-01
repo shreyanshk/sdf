@@ -19,22 +19,11 @@ Under the hood it wraps ``git`` to make version control of your dotfiles simple 
 Installing SDF
 ==============
 
-Dependencies
-------------
-
-Build:
-
-* `Go`_
+SDF is compiled with `Go`_ compiler. It uses `Git`_ internally and optionally depends on `strace`_ for tracing (see below).
 
 .. _Go: https://github.com/golang/go
-
-Runtime:
-
-* `strace`_
-* `git`_
-
 .. _strace: https://github.com/strace/strace
-.. _git: https://git-scm.com/
+.. _Git: https://git-scm.com/
 
 Build + Install
 ---------------
@@ -42,7 +31,7 @@ Build + Install
 .. code-block:: console
 
     $ go build -o sdf main.go   # compile
-    $ mv sdf /usr/bin/sdf       # install
+    $ mv sdf /usr/bin/sdf       # or use directly
 
 Get started with SDF
 ====================

@@ -240,5 +240,3 @@ func main() {
 		return
 	}
 }
-
-// SneakyCobra at https://news.ycombinator.com/item?id=11070797
