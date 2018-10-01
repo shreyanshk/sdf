@@ -14,25 +14,18 @@ var sdfPath = userPath + "/.config/sdf"
 var baseGit = "git --git-dir=" + sdfPath +
 	" --work-tree=" + userPath
 
-// sdf add <path>
-// Add files to version control system.
-func addToVCS(paths []string) {
-	fullCmd := append(strings.Fields(baseGit+" add"), paths...)
-	runWithOutput(fullCmd...)
-}
-
-// sdf git <valid git command>
+// sdf <valid git command>
 // Escape the abstractions! Get full access to the underlying repository.
-func delegateCmdToVCS(cmd []string) {
+func delegateCmdToGit(cmd []string) {
 	fullCmd := append(strings.Fields(baseGit), cmd...)
 	runWithOutput(fullCmd...)
 }
 
-// sdf init <url>
+// sdf clone <url>
 // Initialize the configuration from repository.
 func initFromVCS(url string) {
-	if _, err := os.Stat(sdfPath); !os.IsNotExist(err) {
-		fmt.Println("SDF is already initialized!")
+	if isInitialized() {
+		fmt.Println("SDF is already initialized.")
 		if !askForConfirmation("Force remove previous configuration?") {
 			return
 		}
@@ -40,7 +33,7 @@ func initFromVCS(url string) {
 	}
 	// Git magic below
 	check(os.MkdirAll(userPath+"/.config", 0600))
-	tempDir := userPath + "/.config/sdf-tmp"
+	tempDir := sdfPath + "-tmp"
 	runWithOutput(
 		"git", "clone", "--separate-git-dir="+
 			sdfPath, url, tempDir,
@@ -58,13 +51,13 @@ func initFromVCS(url string) {
 	exec.Command(gitCmd2[0], gitCmd2[1:]...).Run()
 	// ensure other users can't see our data.
 	check(os.Chmod(sdfPath, 0700))
-	fmt.Println("Restored SDF configuration, activate it with 'sdf git checkout .'")
+	fmt.Println("Restored SDF configuration, activate it with 'sdf checkout .'")
 }
 
-// sdf new <url>
+// sdf init <url>
 // Initialize a new configuration and set default remote URL.
 func initNew(url string) {
-	if _, err := os.Stat(sdfPath); !os.IsNotExist(err) {
+	if isInitialized() {
 		fmt.Println("SDF is already initialized!")
 		if !askForConfirmation("Force remove previous configuration?") {
 			return
@@ -72,14 +65,14 @@ func initNew(url string) {
 		check(os.RemoveAll(sdfPath))
 	}
 	// Git magic below
-	exec.Command(
+	runWithOutput(
 		"git", "init", "--bare",
 		sdfPath,
-	).Run()
+	)
 	// This block sets the remote URL
 	gitCmd1 := append(
 		strings.Fields(baseGit),
-		"remote", "add", "master", url,
+		"remote", "add", "origin", url,
 	)
 	exec.Command(gitCmd1[0], gitCmd1[1:]...).Run()
 	gitCmd2 := append(
@@ -90,20 +83,6 @@ func initNew(url string) {
 	// ensure other users can't see our data.
 	check(os.Chmod(sdfPath, 0700))
 	fmt.Println("Initialized new configuration.")
-}
-
-// sdf
-// Show current status.
-func status() {
-	cmd := append(strings.Fields(baseGit), "status")
-	runWithOutput(cmd...)
-}
-
-// sdf rm <path>
-// Remove a file from the repository.
-func rmFromVCS(paths []string) {
-	fullCmd := append(strings.Fields(baseGit+" rm"), paths...)
-	runWithOutput(fullCmd...)
 }
 
 // sdf trace <command>
@@ -202,16 +181,11 @@ func check(err error) {
 func main() {
 	// handle no arguments case
 	if len(os.Args) == 1 {
-		if !isInitialized() {
-			fmt.Println("SDF not initialized.")
-			return
-		}
-		status()
+		// show help
 		return
 	}
-	// following commands don't require initialization.
 	switch os.Args[1] {
-	case "init":
+	case "clone":
 		if len(os.Args) >= 4 {
 			fmt.Println("Too many parameters.")
 			return
@@ -221,7 +195,7 @@ func main() {
 		}
 		initFromVCS(os.Args[2])
 		return
-	case "new":
+	case "init":
 		if len(os.Args) >= 4 {
 			fmt.Println("Too many parameters.")
 			return
@@ -238,39 +212,10 @@ func main() {
 		}
 		traceCmd(os.Args[2:])
 		return
-	}
-	// following commands require initialization.
-	if !isInitialized() {
-		fmt.Println("SDF not initialized.")
-		return
-	}
-	switch os.Args[1] {
-	case "add":
-		if len(os.Args) < 3 {
-			fmt.Println("At least 1 file path is required.")
-			return
-		}
-		addToVCS(os.Args[2:])
-		return
-	case "git":
-		if len(os.Args) < 3 {
-			fmt.Println("Please provide more commands.")
-			return
-		}
-		delegateCmdToVCS(os.Args[2:])
-		return
-	case "rm":
-		if len(os.Args) < 3 {
-			fmt.Println("At least 1 file path is required.")
-			return
-		}
-		rmFromVCS(os.Args[2:])
-		return
 	default:
-		fmt.Println("Invalid command.")
+		delegateCmdToGit(os.Args[1:])
 		return
 	}
 }
 
-// https://news.ycombinator.com/item?id=11070797
-// Credit where it's due.
+// SneakyCobra at https://news.ycombinator.com/item?id=11070797
