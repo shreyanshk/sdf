@@ -178,10 +178,33 @@ func check(err error) {
 	}
 }
 
+const helpstr = `Usage: sdf <command> [<args>]
+
+SDF: Sane DotFiles
+Manage your dotfiles with ease.
+
+SDF is a wrapper around Git and helps version control dotfiles.
+It reimplements a few commands and provides some more.
+
+SDF specific commands are:
+
+   clone <url>   Clone user profile configuration from given URL
+   init  <url>   Create an empty profile with given URL as upstream
+   trace <arg>   List files opened by given command during runtime
+
+Because SDF is just a wrapper around Git, you can pass all valid
+git commands like so:
+
+   $ sdf add ~/.bashrc
+   $ sdf commit -m "Initial commit"
+
+See Git's documentation with 'man git' for more details.
+`
+
 func main() {
 	// handle no arguments case
 	if len(os.Args) == 1 {
-		// show help
+		fmt.Printf(helpstr)
 		return
 	}
 	switch os.Args[1] {
