@@ -149,58 +149,14 @@ func traceCmd(inCmd []string) {
 	straceCmd.Wait() // reap process entry from process table
 }
 
-func main() {
-	if len(os.Args) == 1 {
-		status()
-		return
+// Bunch of helper functions.
+
+// test if SDF is initialized.
+func isInitialized() bool {
+	if _, err := os.Stat(sdfPath); os.IsNotExist(err) {
+		return false
 	}
-	switch os.Args[1] {
-	case "add":
-		if len(os.Args) < 3 {
-			fmt.Println("At least 1 file path is required.")
-			return
-		}
-		addToVCS(os.Args[2:])
-	case "git":
-		if len(os.Args) < 3 {
-			fmt.Println("Please provide more commands.")
-			return
-		}
-		delegateCmdToVCS(os.Args[2:])
-	case "init":
-		if len(os.Args) >= 4 {
-			fmt.Println("Too many parameters.")
-			return
-		} else if len(os.Args) != 3 {
-			fmt.Println("URL required.")
-			return
-		}
-		initFromVCS(os.Args[2])
-	case "new":
-		if len(os.Args) >= 4 {
-			fmt.Println("Too many parameters.")
-			return
-		} else if len(os.Args) != 3 {
-			fmt.Println("URL required.")
-			return
-		}
-		initNew(os.Args[2])
-	case "rm":
-		if len(os.Args) < 3 {
-			fmt.Println("At least 1 file path is required.")
-			return
-		}
-		rmFromVCS(os.Args[2:])
-	case "trace":
-		if len(os.Args) < 3 {
-			fmt.Println("Please provide command.")
-			return
-		}
-		traceCmd(os.Args[2:])
-	default:
-		fmt.Println("Invalid command.")
-		return
-	}
+	return true
 }
 
 // askForConfirmation asks the user for confirmation. A user must type in "yes" or "no" and
@@ -240,6 +196,79 @@ func runWithOutput(cmdStr ...string) {
 func check(err error) {
 	if err != nil {
 		panic(err)
+	}
+}
+
+func main() {
+	// handle no arguments case
+	if len(os.Args) == 1 {
+		if !isInitialized() {
+			fmt.Println("SDF not initialized.")
+			return
+		}
+		status()
+		return
+	}
+	// following commands don't require initialization.
+	switch os.Args[1] {
+	case "init":
+		if len(os.Args) >= 4 {
+			fmt.Println("Too many parameters.")
+			return
+		} else if len(os.Args) != 3 {
+			fmt.Println("URL required.")
+			return
+		}
+		initFromVCS(os.Args[2])
+		return
+	case "new":
+		if len(os.Args) >= 4 {
+			fmt.Println("Too many parameters.")
+			return
+		} else if len(os.Args) != 3 {
+			fmt.Println("URL required.")
+			return
+		}
+		initNew(os.Args[2])
+		return
+	case "trace":
+		if len(os.Args) < 3 {
+			fmt.Println("Please provide command.")
+			return
+		}
+		traceCmd(os.Args[2:])
+		return
+	}
+	// following commands require initialization.
+	if !isInitialized() {
+		fmt.Println("SDF not initialized.")
+		return
+	}
+	switch os.Args[1] {
+	case "add":
+		if len(os.Args) < 3 {
+			fmt.Println("At least 1 file path is required.")
+			return
+		}
+		addToVCS(os.Args[2:])
+		return
+	case "git":
+		if len(os.Args) < 3 {
+			fmt.Println("Please provide more commands.")
+			return
+		}
+		delegateCmdToVCS(os.Args[2:])
+		return
+	case "rm":
+		if len(os.Args) < 3 {
+			fmt.Println("At least 1 file path is required.")
+			return
+		}
+		rmFromVCS(os.Args[2:])
+		return
+	default:
+		fmt.Println("Invalid command.")
+		return
 	}
 }
 
