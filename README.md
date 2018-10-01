@@ -1,2 +1,0 @@
-# sdf
-Simple DotFiles
