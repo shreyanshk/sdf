@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+// changing XDG_CONFIG_HOME after initialization
+// will require a complete reinstall of profile
+// TODO can we make it honor XDG_CONFIG_HOME without hassle?
 var userPath = os.Getenv("HOME")
 var sdfPath = userPath + "/.config/sdf"
 var baseGit = "git --git-dir=" + sdfPath +
@@ -117,11 +120,13 @@ func traceCmd(inCmd []string) {
 		}
 		temp := strings.Split(line, "\"")
 		if len(temp) > 2 { // make sure line has a valid path
-			if strings.HasPrefix(temp[1], userPath) { // show stuff from $HOME
-				if len(temp[1]) == uplen { // Program viewing home dir; skip
-					continue
+			fullpath := temp[1]                        // extract the path
+			if strings.HasPrefix(fullpath, userPath) { // show stuff from $HOME
+				if node, err := os.Stat(fullpath); err == nil && !node.IsDir() {
+					fmt.Println(fullpath[uplen+1:]) // remove $HOME prefix
+				} else if err != nil && !os.IsNotExist(err) { // let user handle other errors
+					panic(err)
 				}
-				fmt.Println(temp[1][uplen+1:]) // remove $HOME prefix
 			}
 		}
 	}
