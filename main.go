@@ -119,11 +119,16 @@ func traceCmd(inCmd []string) {
 			break
 		}
 		temp := strings.Split(line, "\"")
-		if len(temp) > 2 { // make sure line has a valid path
+		displayedFiles := make(map[string]bool) // to store if file already discovered
+		if len(temp) > 2 {                      // ensure line has a valid path
 			fullpath := temp[1]                        // extract the path
 			if strings.HasPrefix(fullpath, userPath) { // show stuff from $HOME
+				// (below) test if path is actually a file
 				if node, err := os.Stat(fullpath); err == nil && !node.IsDir() {
-					fmt.Println(fullpath[uplen+1:]) // remove $HOME prefix
+					if displayedFiles[fullpath] == false { //check if file already shown
+						fmt.Println(fullpath[uplen+1:]) // remove $HOME prefix
+						displayedFiles[fullpath] = true
+					}
 				} else if err != nil && !os.IsNotExist(err) { // let user handle other errors
 					panic(err)
 				}
