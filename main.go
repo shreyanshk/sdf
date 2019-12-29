@@ -10,9 +10,6 @@ import (
 	"strings"
 )
 
-// changing XDG_CONFIG_HOME after initialization
-// will require a complete reinstall of profile
-// TODO can we make it honor XDG_CONFIG_HOME without hassle?
 var userHomeDir string
 var userConfigDir string
 var sdfPath string
@@ -50,6 +47,9 @@ func delegateCmdToGit(cmd []string) {
 	runWithOutput(fullCmd...)
 }
 
+const initfromRepoNote = `Using XDG configuration directory: %s
+If this is not the expected value, please set the correct value by using XDG_CONFIG_HOME environment variable before invoking SDF.`
+
 // sdf clone <url>
 // Initialize the configuration from repository.
 func initFromVCS(url string) {
@@ -59,6 +59,10 @@ func initFromVCS(url string) {
 			return
 		}
 		check(os.RemoveAll(sdfPath))
+	}
+	fmt.Println(fmt.Sprintf(initfromRepoNote, userConfigDir))
+	if !askForConfirmation("Do you want to continue?") {
+		return
 	}
 	// Git magic below
 	tempDir := sdfPath + "-tmp"
