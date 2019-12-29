@@ -13,10 +13,35 @@ import (
 // changing XDG_CONFIG_HOME after initialization
 // will require a complete reinstall of profile
 // TODO can we make it honor XDG_CONFIG_HOME without hassle?
-var userPath = os.Getenv("HOME")
-var sdfPath = path.Join(userPath, ".config", "sdf")
-var baseGit = "git --git-dir=" + sdfPath +
-	" --work-tree=" + userPath
+var userHomeDir string
+var userConfigDir string
+var sdfPath string
+var baseGit string
+
+// function to get, set and verify environment configuration
+func init() {
+	var err error
+	userHomeDir, err = os.UserHomeDir()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	if _, err = os.Stat(userHomeDir); os.IsNotExist(err) {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	userConfigDir, err = os.UserConfigDir()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+	if _, err = os.Stat(userConfigDir); os.IsNotExist(err) {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+	sdfPath = path.Join(userConfigDir, "sdf")
+	baseGit = "git --git-dir=" + sdfPath + " --work-tree=" + userHomeDir
+}
 
 // sdf <valid git command>
 // Escape the abstractions! Get full access to the underlying repository.
@@ -45,7 +70,7 @@ func initFromVCS(url string) {
 	// ensure git-modules work.
 	modules := path.Join(tempDir, ".gitmodules")
 	if _, err := os.Stat(modules); !os.IsNotExist(err) {
-		check(os.Rename(modules, path.Join(userPath, ".gitmodules")))
+		check(os.Rename(modules, path.Join(userHomeDir, ".gitmodules")))
 	}
 	check(os.RemoveAll(tempDir))
 	gitCmd2 := append(
@@ -113,7 +138,7 @@ func traceCmd(inCmd []string) {
 	}
 	scanner := bufio.NewReader(straceOut)
 	straceCmd.Start()
-	uplen := len(userPath) // needed for cleaning output
+	uplen := len(userHomeDir) // needed for cleaning output
 	for {
 		line, err := scanner.ReadString('\n')
 		if err == io.EOF {
@@ -121,8 +146,8 @@ func traceCmd(inCmd []string) {
 		}
 		temp := strings.Split(line, "\"")
 		if len(temp) > 2 { // make sure line has a valid path
-			fullpath := temp[1]                        // extract the path
-			if strings.HasPrefix(fullpath, userPath) { // show stuff from $HOME
+			fullpath := temp[1]                           // extract the path
+			if strings.HasPrefix(fullpath, userHomeDir) { // show stuff from $HOME
 				if node, err := os.Stat(fullpath); err == nil && !node.IsDir() {
 					fmt.Println(fullpath[uplen+1:]) // remove $HOME prefix
 				} else if err != nil && !os.IsNotExist(err) { // let user handle other errors
