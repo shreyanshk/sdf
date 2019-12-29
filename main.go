@@ -172,8 +172,9 @@ func runWithOutput(cmdStr ...string) {
 	cmd := exec.Command(
 		cmdStr[0], cmdStr[1:]...,
 	)
-	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
 	cmd.Run()
 }
 
