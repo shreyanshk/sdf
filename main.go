@@ -36,7 +36,6 @@ func initFromVCS(url string) {
 		check(os.RemoveAll(sdfPath))
 	}
 	// Git magic below
-	check(os.MkdirAll(path.Join(userPath, ".config"), 0600))
 	tempDir := sdfPath + "-tmp"
 	runWithOutput(
 		"git", "clone",
