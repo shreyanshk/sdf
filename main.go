@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 )
 
@@ -13,7 +14,7 @@ import (
 // will require a complete reinstall of profile
 // TODO can we make it honor XDG_CONFIG_HOME without hassle?
 var userPath = os.Getenv("HOME")
-var sdfPath = userPath + "/.config/sdf"
+var sdfPath = path.Join(userPath, ".config", "sdf")
 var baseGit = "git --git-dir=" + sdfPath +
 	" --work-tree=" + userPath
 
@@ -35,7 +36,7 @@ func initFromVCS(url string) {
 		check(os.RemoveAll(sdfPath))
 	}
 	// Git magic below
-	check(os.MkdirAll(userPath+"/.config", 0600))
+	check(os.MkdirAll(path.Join(userPath, ".config"), 0600))
 	tempDir := sdfPath + "-tmp"
 	runWithOutput(
 		"git", "clone",
@@ -43,9 +44,9 @@ func initFromVCS(url string) {
 		url, tempDir,
 	)
 	// ensure git-modules work.
-	modules := tempDir + "/.gitmodules"
+	modules := path.Join(tempDir, ".gitmodules")
 	if _, err := os.Stat(modules); !os.IsNotExist(err) {
-		check(os.Rename(modules, userPath+"/.gitmodules"))
+		check(os.Rename(modules, path.Join(userPath, ".gitmodules")))
 	}
 	check(os.RemoveAll(tempDir))
 	gitCmd2 := append(
