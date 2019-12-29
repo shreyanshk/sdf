@@ -38,8 +38,9 @@ func initFromVCS(url string) {
 	check(os.MkdirAll(userPath+"/.config", 0600))
 	tempDir := sdfPath + "-tmp"
 	runWithOutput(
-		"git", "clone", "--separate-git-dir="+
-			sdfPath, url, tempDir,
+		"git", "clone",
+		"--separate-git-dir="+sdfPath,
+		url, tempDir,
 	)
 	// ensure git-modules work.
 	modules := tempDir + "/.gitmodules"
