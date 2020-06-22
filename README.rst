@@ -36,8 +36,8 @@ Build + Install
 Get started with SDF
 ====================
 
-Start with a clean $HOME
-------------------------
+Either start with a clean $HOME:
+--------------------------------
 
 Create an empty repository on any Git hosting service. Let's assume your repository URL is ``https://example.com/username/profile.git``.
 
@@ -66,8 +66,8 @@ Here, ``master`` is the branch that you're pushing to.
     $ sdf commit -m "Move to Zsh"
     $ sdf push
 
-Restore previous $HOME
-----------------------
+Or restore previous $HOME:
+--------------------------
 
 Assuming your repository URL is ``https://example.com/username/profile.git`` and you need the ``master`` branch.
 
